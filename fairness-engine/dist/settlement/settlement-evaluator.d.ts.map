@@ -1,0 +1,1 @@
+{"version":3,"file":"settlement-evaluator.d.ts","sourceRoot":"","sources":["../../src/settlement/settlement-evaluator.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,qBAAqB,EAAE,gBAAgB,EAAE,MAAM,gBAAgB,CAAC;AAEzE,qBAAa,mBAAmB;IAC9B;;OAEG;WACW,kBAAkB,CAC9B,WAAW,EAAE,qBAAqB,EAClC,OAAO,EAAE,MAAM,EACf,UAAU,EAAE,MAAM,GACjB,gBAAgB;CA+CpB"}

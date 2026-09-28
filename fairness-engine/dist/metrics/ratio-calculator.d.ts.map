@@ -1,0 +1,1 @@
+{"version":3,"file":"ratio-calculator.d.ts","sourceRoot":"","sources":["../../src/metrics/ratio-calculator.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,iBAAiB,EAAE,MAAM,gBAAgB,CAAC;AAEnD,qBAAa,eAAe;IAC1B;;;;OAIG;WACW,oBAAoB,CAAC,MAAM,EAAE,iBAAiB,GAAG,MAAM;IAKrE;;;OAGG;WACW,wBAAwB,CAAC,OAAO,EAAE,iBAAiB,EAAE,GAAG,MAAM;CAO7E"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"fuzzy-engine.d.ts","sourceRoot":"","sources":["../../src/fuzzy/fuzzy-engine.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,qBAAqB,EAAE,gBAAgB,EAAmB,MAAM,gBAAgB,CAAC;AAG1F,qBAAa,iBAAiB;IAC5B,OAAO,CAAC,WAAW,CAAmB;gBAE1B,YAAY,CAAC,EAAE,gBAAgB;IAI3C;;;OAGG;IACI,aAAa,CAAC,KAAK,EAAE,MAAM,GAAG,qBAAqB;CA0D3D"}
