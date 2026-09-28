@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: raiaas-fabric
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fabric-orderer
+  namespace: raiaas-fabric
+spec:
+  serviceName: fabric-orderer
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fabric-orderer
+  template:
+    metadata:
+      labels:
+        app: fabric-orderer
+    spec:
+      containers:
+        - name: orderer
+          image: hyperledger/fabric-orderer:2.5.4
+          env:
+            - name: ORDERER_GENERAL_LISTENADDRESS
+              value: "0.0.0.0"
+            - name: ORDERER_GENERAL_LISTENPORT
+              value: "7050"
+            - name: ORDERER_GENERAL_LOCALMSPID
+              value: "OrdererMSP"
+          ports:
+            - containerPort: 7050
+          volumeMounts:
+            - name: orderer-data
+              mountPath: /var/hyperledger/production/orderer
+  volumeClaimTemplates:
+    - metadata:
+        name: orderer-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fabric-orderer
+  namespace: raiaas-fabric
+spec:
+  ports:
+    - port: 7050
+  selector:
+    app: fabric-orderer
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: peer-platform
+  namespace: raiaas-fabric
+spec:
+  serviceName: peer-platform
+  replicas: 1
+  selector:
+    matchLabels:
+      app: peer-platform
+  template:
+    metadata:
+      labels:
+        app: peer-platform
+    spec:
+      containers:
+        - name: peer
+          image: hyperledger/fabric-peer:2.5.4
+          env:
+            - name: CORE_PEER_ID
+              value: "peer0.platform.raiaas.com"
+            - name: CORE_PEER_ADDRESS
+              value: "peer0.platform.raiaas.com:7051"
+            - name: CORE_PEER_LOCALMSPID
+              value: "PlatformMSP"
+          ports:
+            - containerPort: 7051
+          volumeMounts:
+            - name: peer-data
+              mountPath: /var/hyperledger/production
+  volumeClaimTemplates:
+    - metadata:
+        name: peer-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 20Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: peer-platform
+  namespace: raiaas-fabric
+spec:
+  ports:
+    - port: 7051
+  selector:
+    app: peer-platform

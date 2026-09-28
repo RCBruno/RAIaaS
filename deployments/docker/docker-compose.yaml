@@ -1,0 +1,163 @@
+version: '3.8'
+
+networks:
+  raiaas-net:
+    driver: bridge
+
+volumes:
+  orderer.raiaas.com:
+  peer0.platform.raiaas.com:
+  peer0.provider.raiaas.com:
+  peer0.auditor.raiaas.com:
+  ipfs_data:
+
+services:
+  # Fabric CAs
+  ca.platform.raiaas.com:
+    image: hyperledger/fabric-ca:1.5.7
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca.platform.raiaas.com
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+    ports:
+      - "7054:7054"
+    networks:
+      - raiaas-net
+
+  ca.provider.raiaas.com:
+    image: hyperledger/fabric-ca:1.5.7
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca.provider.raiaas.com
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+    ports:
+      - "8054:7054"
+    networks:
+      - raiaas-net
+
+  ca.auditor.raiaas.com:
+    image: hyperledger/fabric-ca:1.5.7
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca.auditor.raiaas.com
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+    ports:
+      - "9054:7054"
+    networks:
+      - raiaas-net
+
+  # Ordering Service (Raft)
+  orderer.raiaas.com:
+    image: hyperledger/fabric-orderer:2.5.4
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+    volumes:
+      - orderer.raiaas.com:/var/hyperledger/production/orderer
+    ports:
+      - "7050:7050"
+    networks:
+      - raiaas-net
+
+  # CouchDB State DBs
+  couchdb0:
+    image: couchdb:3.3.2
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - "5984:5984"
+    networks:
+      - raiaas-net
+
+  couchdb1:
+    image: couchdb:3.3.2
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - "6984:5984"
+    networks:
+      - raiaas-net
+
+  # Platform Peer
+  peer0.platform.raiaas.com:
+    image: hyperledger/fabric-peer:2.5.4
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=docker_raiaas-net
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_ID=peer0.platform.raiaas.com
+      - CORE_PEER_ADDRESS=peer0.platform.raiaas.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.platform.raiaas.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.platform.raiaas.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.platform.raiaas.com:7051
+      - CORE_PEER_LOCALMSPID=PlatformMSP
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0:5984
+    volumes:
+      - /var/run/:/host/var/run/
+      - peer0.platform.raiaas.com:/var/hyperledger/production
+    ports:
+      - "7051:7051"
+    networks:
+      - raiaas-net
+
+  # Provider Peer
+  peer0.provider.raiaas.com:
+    image: hyperledger/fabric-peer:2.5.4
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=docker_raiaas-net
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_ID=peer0.provider.raiaas.com
+      - CORE_PEER_ADDRESS=peer0.provider.raiaas.com:8051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:8051
+      - CORE_PEER_LOCALMSPID=ProviderMSP
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+    volumes:
+      - /var/run/:/host/var/run/
+      - peer0.provider.raiaas.com:/var/hyperledger/production
+    ports:
+      - "8051:8051"
+    networks:
+      - raiaas-net
+
+  # IPFS Node
+  ipfs-node:
+    image: ipfs/go-ipfs:v0.26.0
+    environment:
+      - IPFS_PATH=/data/ipfs
+    volumes:
+      - ipfs_data:/data/ipfs
+    ports:
+      - "4001:4001"
+      - "5001:5001"
+      - "8080:8080"
+    networks:
+      - raiaas-net
+
+  # REST API Gateway
+  api-gateway:
+    build:
+      context: ../../
+      dockerfile: deployments/docker/Dockerfile.api
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+    ports:
+      - "3000:3000"
+    networks:
+      - raiaas-net
