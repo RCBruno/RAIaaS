@@ -1,0 +1,22 @@
+{
+  "name": "raiaas-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Responsible AI-as-a-Service (RAIaaS) Monorepo - Provider-Fairness-as-a-Service",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "echo \"No linter configured yet\"",
+    "clean": "rm -rf packages/*/dist packages/*/node_modules node_modules"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.24",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.3.3"
+  }
+}
